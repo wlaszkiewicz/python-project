@@ -1,0 +1,26 @@
+{
+    "Wiktor": {
+        "gender": "Male",
+        "dob": "2011-04-14",
+        "age": 13,
+        "diabetes_type": "Neonatal Diabetes"
+    },
+    "Marcel": {
+        "gender": "Male",
+        "dob": "2008-06-13",
+        "age": 16,
+        "diabetes_type": "LADA (Latent autoimmune diabetes in adults)"
+    },
+    "Marycha": {
+        "gender": "Female",
+        "dob": "2005-04-20",
+        "age": 19,
+        "diabetes_type": "Type 1"
+    },
+    "Basia": {
+        "gender": "Female",
+        "dob": "1993-03-19",
+        "age": 31,
+        "diabetes_type": "Cystic Fibrosis-related Diabetes"
+    }
+}
