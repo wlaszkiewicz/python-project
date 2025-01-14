@@ -5,6 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkcalendar import Calendar
+import json
+from datetime import datetime
 
 # Initialize the root window using CustomTkinter
 root = ctk.CTk()
@@ -24,6 +26,7 @@ def center_window(window, width, height):
 data_file = None
 canvas = None
 user_info = {}
+user_data_file = "user_info.json"
 
 # Set up custom font and theme
 ctk.set_appearance_mode("light")
@@ -77,60 +80,110 @@ def make_graph():
     else:
         messagebox.showerror("Error", "The dataset does not have the required columns ('Date', 'Time', 'Blood Glucose Level (mg/dL)').")
 
+# Function to save user information to a JSON file
+def save_user_data(data):
+    try:
+        with open(user_data_file, "w") as file:
+            json.dump(data, file, indent=4)
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to save user information: {e}")
+
+# Function to load user data from JSON
+def load_user_data():
+    try:
+        with open(user_data_file, "r") as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+# Open user information window
 def open_user_info_window():
-    # Create a new window for user information
-    user_window = ctk.CTkToplevel(root)
-    user_window.title("Enter Your Information")
-    user_window.geometry("400x500")
-    user_window.config(bg="#F0F4F8")
-
-    center_window(user_window, 400, 700)
-
-    ctk.CTkLabel(user_window, text="Enter your information", font=("Helvetica", 14),text_color="#333333", bg_color="#F0F4F8").pack(pady=20)
-
-    # Gender Selection
-    gender_label = ctk.CTkLabel(user_window, text="Select Gender",text_color="#333333", bg_color="#F0F4F8")
-    gender_label.pack(pady=10)
-
-    gender_var = tk.StringVar(value="Male")
-    gender_male = ctk.CTkRadioButton(user_window, text="Male", variable=gender_var, value="Male",text_color="#333333", bg_color="#F0F4F8")
-    gender_female = ctk.CTkRadioButton(user_window, text="Female", variable=gender_var, value="Female",text_color="#333333", bg_color="#F0F4F8")
-    gender_other = ctk.CTkRadioButton(user_window, text="Other", variable=gender_var, value="Other",text_color="#333333", bg_color="#F0F4F8")
-
-    gender_male.pack(pady=5)
-    gender_female.pack(pady=5)
-    gender_other.pack(pady=5)
-
-    # Age Selection using Spinbox
-    age_label = ctk.CTkLabel(user_window, text="Select Age",text_color="#333333", bg_color="#F0F4F8")
-    age_label.pack(pady=10)
-    age_spinbox = tk.Spinbox(user_window, from_=18, to=100, width=5)
-    age_spinbox.pack(pady=5)
-
-    # Date of Birth Selection using Calendar
-    dob_label = ctk.CTkLabel(user_window, text="Select Date of Birth",text_color="#333333", bg_color="#F0F4F8")
-    dob_label.pack(pady=10)
-    cal = Calendar(user_window, selectmode='day', date_pattern='yyyy-mm-dd')
-    cal.pack(pady=10)
-
-    # Diabetes Type Selection using ComboBox
-    diabetes_label = ctk.CTkLabel(user_window, text="Select Type of Diabetes",text_color="#333333", bg_color="#F0F4F8")
-    diabetes_label.pack(pady=10)
-    diabetes_options = ["Type 1", "Type 2", "Gestational Diabetes", "LADA (Latent autoimmune diabetes in adults)", "MODY (Maturity Onset Diabetes of the Young)", "Neonatal Diabetes", "Cystic Fibrosis-related Diabetes", "Steroid-induced Diabetes", "Other"]
-    diabetes_var = tk.StringVar(value=diabetes_options[0])
-    diabetes_combobox = ctk.CTkComboBox(user_window, values=diabetes_options, variable=diabetes_var,text_color="#333333", bg_color="#F0F4F8")
-    diabetes_combobox.pack(pady=10)
+    user_data = load_user_data()
 
     def save_user_info():
-        user_info["gender"] = gender_var.get()
-        user_info["age"] = age_spinbox.get()
-        user_info["dob"] = cal.get_date()
-        user_info["diabetes_type"] = diabetes_var.get()
-        messagebox.showinfo("Info", "Your information has been saved successfully!")
+        name = name_entry.get()
+        if not name:
+            messagebox.showerror("Error", "Name is required.")
+            return
+
+        dob = cal.get_date()
+        birth_date = datetime.strptime(dob, '%Y-%m-%d')
+        today = datetime.today()
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+        user_data[name] = {
+            "gender": gender_var.get(),
+            "dob": dob,
+            "age": age,
+            "diabetes_type": diabetes_var.get()
+        }
+
+        save_user_data(user_data)
+        messagebox.showinfo("Info", "User information saved successfully!")
         user_window.destroy()
 
-    save_button = ctk.CTkButton(user_window, text="Save Information", command=save_user_info,text_color="#333333", bg_color="#F0F4F8")
-    save_button.pack(pady=20)
+    def populate_fields(name):
+        if name in user_data:
+            user = user_data[name]
+            gender_var.set(user.get("gender", "Male"))
+            cal.set_date(user.get("dob", datetime.today().strftime('%Y-%m-%d')))
+            diabetes_var.set(user.get("diabetes_type", "Type 1"))
+            update_age_label(user.get("dob"))
+
+    def update_age_label(dob):
+        if dob:
+            birth_date = datetime.strptime(dob, '%Y-%m-%d')
+            today = datetime.today()
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+            age_label.configure(text=f"Age: {age} years")
+
+    user_window = ctk.CTkToplevel(root)
+    user_window.title("Enter Your Information")
+    user_window.attributes('-topmost', True)
+    user_window.config(bg="#F0F4F8")
+    center_window(user_window, 500, 700)
+
+    ctk.CTkLabel(user_window, text="Enter your information", font=("Helvetica", 14), text_color="#333333", bg_color="#F0F4F8").pack(pady=10)
+
+    name_label = ctk.CTkLabel(user_window, text="Name", text_color="#333333", bg_color="#F0F4F8")
+    name_label.pack(pady=5)
+    name_entry = ctk.CTkEntry(user_window)
+    name_entry.pack(pady=5)
+
+    gender_label = ctk.CTkLabel(user_window, text="Select Gender", text_color="#333333", bg_color="#F0F4F8")
+    gender_label.pack(pady=5)
+
+    gender_var = tk.StringVar(value="Male")
+    ctk.CTkRadioButton(user_window, text="Male", variable=gender_var, value="Male", text_color="#333333", bg_color="#F0F4F8").pack(pady=2)
+    ctk.CTkRadioButton(user_window, text="Female", variable=gender_var, value="Female", text_color="#333333", bg_color="#F0F4F8").pack(pady=2)
+    ctk.CTkRadioButton(user_window, text="Other", variable=gender_var, value="Other", text_color="#333333", bg_color="#F0F4F8").pack(pady=2)
+
+    dob_label = ctk.CTkLabel(user_window, text="Select Date of Birth", text_color="#333333", bg_color="#F0F4F8")
+    dob_label.pack(pady=5)
+    cal = Calendar(user_window, selectmode='day', date_pattern='yyyy-mm-dd')
+    cal.pack(pady=5)
+
+    age_label = ctk.CTkLabel(user_window, text="Age: ", text_color="#333333", bg_color="#F0F4F8")
+    age_label.pack(pady=5)
+
+    diabetes_label = ctk.CTkLabel(user_window, text="Select Type of Diabetes", text_color="#333333", bg_color="#F0F4F8")
+    diabetes_label.pack(pady=5)
+
+    diabetes_options = ["Type 1", "Type 2", "Gestational Diabetes", "LADA (Latent autoimmune diabetes in adults)", "MODY (Maturity Onset Diabetes of the Young)", "Neonatal Diabetes", "Cystic Fibrosis-related Diabetes", "Steroid-induced Diabetes", "Other"]
+    diabetes_var = tk.StringVar(value=diabetes_options[0])
+    diabetes_combobox = ctk.CTkComboBox(user_window, values=diabetes_options, variable=diabetes_var, text_color="#333333", bg_color="#F0F4F8")
+    diabetes_combobox.pack(pady=5)
+
+    ctk.CTkButton(user_window, text="Save Information", command=save_user_info, text_color="#333333", bg_color="#F0F4F8").pack(pady=20)
+
+    def on_name_change(event):
+        populate_fields(name_entry.get())
+
+    def on_date_change(event):
+        update_age_label(cal.get_date())
+
+    cal.bind("<<CalendarSelected>>", on_date_change)
+    name_entry.bind("<FocusOut>", on_name_change)
+
 
 def initialize_gui():
     frame = ctk.CTkFrame(root, corner_radius=10)
