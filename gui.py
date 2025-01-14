@@ -116,7 +116,7 @@ def open_user_info_window():
     # Diabetes Type Selection using ComboBox
     diabetes_label = ctk.CTkLabel(user_window, text="Select Type of Diabetes",text_color="#333333", bg_color="#F0F4F8")
     diabetes_label.pack(pady=10)
-    diabetes_options = ["Type 1", "Type 2", "Gestational Diabetes", "Other"]
+    diabetes_options = ["Type 1", "Type 2", "Gestational Diabetes", "LADA (Latent autoimmune diabetes in adults)", "MODY (Maturity Onset Diabetes of the Young)", "Neonatal Diabetes", "Cystic Fibrosis-related Diabetes", "Steroid-induced Diabetes", "Other"]
     diabetes_var = tk.StringVar(value=diabetes_options[0])
     diabetes_combobox = ctk.CTkComboBox(user_window, values=diabetes_options, variable=diabetes_var,text_color="#333333", bg_color="#F0F4F8")
     diabetes_combobox.pack(pady=10)
