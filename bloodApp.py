@@ -1,14 +1,17 @@
 import tkinter as tk
 import customtkinter as ctk
-from tkinter import filedialog, messagebox, font
+from tkinter import filedialog, messagebox, font, simpledialog
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkcalendar import Calendar
 import json
 from datetime import datetime
+import csv
 
 BG_COLOR = "#dbdbdb"
+low_threshold = None
+high_threshold = None
 
 class App:
     def __init__(self, root):
@@ -41,7 +44,7 @@ class App:
         self.root.geometry(f'{width}x{height}+{position_right}+{position_top}')
 
     def load_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")], parent=self.root)
         if file_path:
             self.data_file = file_path
             messagebox.showinfo("File Loaded", "Dataset loaded successfully!")
@@ -86,7 +89,7 @@ class App:
             canvas.draw()
 
             def save_graph():
-                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")], parent=self.root)
                 if file_path:
                     fig.savefig(file_path)
                     messagebox.showinfo("Success", "Graph saved successfully!")
@@ -128,7 +131,7 @@ class App:
             canvas.draw()
 
             def save_graph():
-                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")], parent=self.root)
                 if file_path:
                     fig.savefig(file_path)
                     messagebox.showinfo("Success", "Graph saved successfully!")
@@ -137,6 +140,186 @@ class App:
             save_button.pack(pady=10)
         else:
             messagebox.showerror("Error", "The dataset does not have the required columns ('Meal', 'Blood Glucose Level (mg/dL)').")
+
+    def generate_insights(self):
+        global low_threshold, high_threshold
+        if self.data_file is None:
+            messagebox.showerror("Error", "No dataset loaded. Please choose a file first.")
+            return
+
+        data = pd.read_csv(self.data_file)
+        if 'Meal' in data.columns and 'Blood Glucose Level (mg/dL)' in data.columns:
+            meal_groups = data.groupby('Meal')['Blood Glucose Level (mg/dL)']
+            meal_stats = meal_groups.agg(['mean', 'std', 'min', 'max', 'count'])
+            meal_stats['range'] = meal_stats['max'] - meal_stats['min']
+            meal_stats = meal_stats.round(2)
+
+            # Thresholds
+            if not low_threshold or not high_threshold:
+                threshold_dialog = CustomThresholdDialog(self.root, "Set Thresholds", low_initial=70, high_initial=180)
+                thresholds = threshold_dialog.show()
+                if not thresholds:
+                    return # If the user cancels the dialog
+                low_threshold, high_threshold = thresholds
+
+            # Categorize glucose levels
+            data['Category'] = pd.cut(data['Blood Glucose Level (mg/dL)'], bins=[0, low_threshold, high_threshold, float('inf')],labels=['Low', 'Normal', 'High'])
+
+            # Calculate time in each category
+            category_counts = data['Category'].value_counts(normalize=True) * 100
+
+            # Detect patterns
+            data['Datetime'] = pd.to_datetime(data['Date'] + ' ' + data['Time'])
+            data.set_index('Datetime', inplace=True)
+            daily_avg = data['Blood Glucose Level (mg/dL)'].resample('D').mean()
+
+            # Detect morning averages
+            morning_data = data.between_time('06:00', '09:00')
+            morning_avg = morning_data['Blood Glucose Level (mg/dL)'].mean()
+
+            noon_data = data.between_time('09:00', '12:00')
+            noon_avg = noon_data['Blood Glucose Level (mg/dL)'].mean()
+
+            afternoon_data = data.between_time('12:00', '18:00')
+            afternoon_avg = afternoon_data['Blood Glucose Level (mg/dL)'].mean()
+
+            evening_data = data.between_time('18:00', '21:00')
+            evening_avg = evening_data['Blood Glucose Level (mg/dL)'].mean()
+
+            night_data = data.between_time('21:00', '06:00')
+            night_avg = night_data['Blood Glucose Level (mg/dL)'].mean()
+
+
+            # Insights Window
+            insights_window = ctk.CTkToplevel(self.root)
+            insights_window.title("Blood Glucose Insights")
+            insights_window.attributes('-topmost', True)
+            insights_window.geometry("600x600")
+
+            # Frame
+            insights_frame = ctk.CTkScrollableFrame(insights_window, fg_color="#FFFFFF", width=780, height=500)
+            insights_frame.pack(pady=10, padx=10)
+
+            # Section: Meal Stats
+            ctk.CTkLabel(insights_frame, text="Meal Statistics", font=("Arial", 16, "bold")).pack(pady=10)
+
+            # Create a container frame to center the table
+            meal_stats_container = ctk.CTkFrame(insights_frame, fg_color="#FFFFFF")
+            meal_stats_container.pack(pady=5)
+
+            meal_stats_frame = ctk.CTkFrame(meal_stats_container, fg_color="#F9F9F9")
+            meal_stats_frame.pack(padx=10, pady=5)
+
+            headers = ['Meal', 'Mean', 'Std Dev', 'Min', 'Max', 'Count', 'Range']
+            for col, header in enumerate(headers):
+                ctk.CTkLabel(meal_stats_frame, text=header, font=("Arial", 12, "bold")).grid(row=0, column=col, padx=10,
+                                                                                             sticky="ew")
+
+            for i, (meal, stats) in enumerate(meal_stats.iterrows(), 1):
+                ctk.CTkLabel(meal_stats_frame, text=meal).grid(row=i, column=0, padx=10, sticky="ew")
+                for col, value in enumerate(stats):
+                    ctk.CTkLabel(meal_stats_frame, text=value).grid(row=i, column=col + 1, padx=10, sticky="ew")
+
+            # Section: Time in Range
+            ctk.CTkLabel(insights_frame, text="Time in Range", font=("Arial", 16, "bold")).pack(pady=10)
+            for category, percentage in category_counts.items():
+                ctk.CTkLabel(insights_frame, text=f"Time in {category}: {percentage:.2f}%", font=("Arial", 12)).pack(
+                    pady=5)
+
+            # Section: Daily Averages
+            ctk.CTkLabel(insights_frame, text="Daily Averages", font=("Arial", 16, "bold")).pack(pady=10)
+            for date, avg in daily_avg.items():
+                ctk.CTkLabel(insights_frame, text=f"{date.date()}: {avg:.2f} mg/dL", font=("Arial", 12)).pack(pady=2)
+
+            # Section: Morning Averages
+            ctk.CTkLabel(insights_frame, text=f"Average Morning Level: {morning_avg:.2f} mg/dL",
+                         font=("Arial", 14, "bold"), text_color="green").pack(pady=10)
+            ctk.CTkLabel(insights_frame, text=f"Average Noon Level: {noon_avg:.2f} mg/dL",
+                            font=("Arial", 14, "bold"), text_color="green").pack(pady=10)
+            ctk.CTkLabel(insights_frame, text=f"Average Afternoon Level: {afternoon_avg:.2f} mg/dL",
+                            font=("Arial", 14, "bold"), text_color="green").pack(pady=10)
+            ctk.CTkLabel(insights_frame, text=f"Average Evening Level: {evening_avg:.2f} mg/dL",
+                            font=("Arial", 14, "bold"), text_color="green").pack(pady=10)
+            ctk.CTkLabel(insights_frame, text=f"Average Night Level: {night_avg:.2f} mg/dL",
+                            font=("Arial", 14, "bold"), text_color="green").pack(pady=10)
+
+
+            def export_insights():
+                # Prepare export path
+                export_path = filedialog.asksaveasfile(mode="w", defaultextension=".csv",
+                                                       filetypes=[("CSV Files", "*.csv")], parent=self.root)
+                if export_path:
+                    # Prepare data for export
+                    export_data = []
+
+                    # Add Meal Statistics
+                    export_data.append(["Meal Statistics"])
+                    export_data.append(['Meal', 'Mean', 'Std Dev', 'Min', 'Max', 'Count', 'Range'])
+                    for meal, stats in meal_stats.iterrows():
+                        export_data.append(
+                            [meal, stats['mean'], stats['std'], stats['min'], stats['max'], stats['count'],
+                             stats['range']])
+
+                    # Add blank row
+                    export_data.append([])
+
+                    # Add Time in Range
+                    export_data.append(["Time in Range"])
+                    export_data.append(['Category', 'Percentage (%)'])
+                    for category, percentage in category_counts.items():
+                        export_data.append([category, round(percentage, 2)])
+
+                    # Add blank row
+                    export_data.append([])
+
+                    # Add Daily Averages
+                    export_data.append(["Daily Averages"])
+                    export_data.append(['Date', 'Average Glucose (mg/dL)'])
+                    for date, avg in daily_avg.items():
+                        export_data.append([date.date(), round(avg, 2)])
+
+                    # Add blank row
+                    export_data.append([])
+
+                    # Add Morning Averages
+                    export_data.append(["Morning Average"])
+                    export_data.append(['Time Period', 'Average Glucose (mg/dL)'])
+                    export_data.append(["06:00-09:00", round(morning_avg, 2)])
+
+                    # Add Noon Averages
+                    export_data.append(["Noon Average"])
+                    export_data.append(['Time Period', 'Average Glucose (mg/dL)'])
+                    export_data.append(["09:00-12:00", round(noon_avg, 2)])
+
+                    # Add Afternoon Averages
+                    export_data.append(["Afternoon Average"])
+                    export_data.append(['Time Period', 'Average Glucose (mg/dL)'])
+                    export_data.append(["12:00-18:00", round(afternoon_avg, 2)])
+
+                    # Add Evening Averages
+                    export_data.append(["Evening Average"])
+                    export_data.append(['Time Period', 'Average Glucose (mg/dL)'])
+                    export_data.append(["18:00-21:00", round(evening_avg, 2)])
+
+                    # Add Night Averages
+                    export_data.append(["Night Average"])
+                    export_data.append(['Time Period', 'Average Glucose (mg/dL)'])
+                    export_data.append(["21:00-06:00", round(night_avg, 2)])
+
+
+                    # Export to CSV
+                    with open(export_path.name, mode="w", newline="") as file:
+                        writer = csv.writer(file)
+                        writer.writerows(export_data)
+
+                    # Show success message
+                    messagebox.showinfo("Export Successful", f"Insights exported to {export_path.name}.")
+
+            ctk.CTkButton(insights_window, text="Export to CSV", command=export_insights).pack(pady=10)
+
+        else:
+            messagebox.showerror("Error",
+                                 "The dataset does not have the required columns ('Meal', 'Blood Glucose Level (mg/dL)').")
 
     def save_user_data(self, new_data):
         try:
@@ -378,6 +561,51 @@ class MainFrame(ctk.CTkFrame):
                       command=app.make_graph_levels_over_time).grid(row=1, column=0, columnspan=3, padx=10, pady=10)
         ctk.CTkButton(button_frame, text="Blood Glucose Levels Depending on the Meal", width=20,
                       command=app.make_graph_levels_meal).grid(row=2, column=0, columnspan=3, padx=10, pady=10)
+        ctk.CTkButton(button_frame, text="Generate Insights", width=20, command=app.generate_insights).grid(row=3, column=0, columnspan=3, padx=10, pady=10)
+
+
+class CustomThresholdDialog:
+    def __init__(self, root, title, low_initial=70, high_initial=180):
+
+        self.dialog = ctk.CTkToplevel(root)
+        self.dialog.title(title)
+        self.dialog.geometry("300x200")
+        self.dialog.config(bg=BG_COLOR)
+        self.dialog.resizable(False, False)
+        self.dialog.attributes('-topmost', True)  # Always on top
+        self.dialog.grab_set()  # Make the dialog modal
+
+        self.low_threshold = tk.IntVar(value=low_initial)
+        self.high_threshold = tk.IntVar(value=high_initial)
+
+        # Add labels and entry fields
+        ctk.CTkLabel(self.dialog, text="Low Threshold:", font=("Arial", 15), bg_color=BG_COLOR).pack(pady=10)
+        self.low_entry = ctk.CTkEntry(self.dialog, font=("Arial", 15), textvariable=self.low_threshold)
+        self.low_entry.pack()
+
+        ctk.CTkLabel(self.dialog, text="High Threshold:", font=("Arial", 15), bg_color=BG_COLOR).pack(pady=10)
+        self.high_entry = ctk.CTkEntry(self.dialog, font=("Arial", 15), textvariable=self.high_threshold)
+        self.high_entry.pack()
+
+        # Add confirm button
+        ctk.CTkButton(self.dialog, text="Confirm", command=self.confirm).pack(pady=10)
+
+        # Initialize result
+        self.result = None
+
+    def confirm(self):
+        # Retrieve the entered values and close the dialog
+        try:
+            self.result = (int(self.low_entry.get()), int(self.high_entry.get()))
+        except ValueError:
+            tk.messagebox.showerror("Invalid Input", "Please enter valid integers.")
+            return
+        self.dialog.destroy()
+
+    def show(self):
+        self.dialog.wait_window()
+        return self.result
+
 if __name__ == "__main__":
     root = ctk.CTk()
     app = App(root)
