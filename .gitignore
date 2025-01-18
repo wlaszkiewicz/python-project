@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+dist/
+build/
+eggs/
+.eggs/
+lib/
+lib64/
+site-packages/
+
+# Virtual environment folder
+.venv/
+
+# Test and coverage reports
+.coverage
+*.cover
+*.py,cover
+nosetests.xml
+coverage.xml
+*.log
+
+# Pytest cache
+.cache/
+
+# IDE or Editor files
+.vscode/
+.idea/
+
+# Jupyter Notebook files
+.ipynb_checkpoints
+
+# Python-specific temporary files
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
