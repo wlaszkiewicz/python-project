@@ -126,6 +126,9 @@ class WelcomeFrame(ctk.CTkFrame):
         ctk.CTkButton(self, text="Load existing user", command=self.choose_user).pack(pady=20)
 
     def choose_user(self):
+        if hasattr(self, 'user_frame') and self.user_frame.winfo_exists():
+            return  # If the user frame already exists, do nothing
+
         self.user_info = self.app.load_user_data()
         if not self.user_info:
             messagebox.showerror("Error", "No user data found. Please create a new user.")
@@ -133,11 +136,13 @@ class WelcomeFrame(ctk.CTkFrame):
 
         user_list = list(self.user_info.keys())
         self.user_var = tk.StringVar(value=user_list[0])
-        user_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
-        user_frame.pack(pady=20)
-        ctk.CTkLabel(user_frame, text="Select User:", text_color="#333333").pack(side="left", padx=10)
-        ctk.CTkComboBox(user_frame, values=user_list, variable=self.user_var, text_color="#333333").pack(side="left", padx=10)
-        ctk.CTkButton(user_frame, text="Select", command=self.load_user_data_for_selected_user, text_color="#333333").pack(side="left", padx=10)
+        self.user_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
+        self.user_frame.pack(pady=20)
+        ctk.CTkLabel(self.user_frame, text="Select User:", text_color="#333333").pack(side="left", padx=10)
+        ctk.CTkComboBox(self.user_frame, values=user_list, variable=self.user_var, text_color="#333333").pack(
+            side="left", padx=10)
+        ctk.CTkButton(self.user_frame, text="Select", command=self.load_user_data_for_selected_user,
+                      text_color="#333333").pack(side="left", padx=10)
 
     def load_user_data_for_selected_user(self):
         app.selected_user = self.user_var.get()
