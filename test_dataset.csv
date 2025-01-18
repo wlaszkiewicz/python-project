@@ -1,0 +1,13 @@
+Date,Time,Blood Glucose Level (mg/dL),Meal,Notes
+2025-01-01,08:00,95,Fasting,
+2025-01-01,12:30,140,After Lunch,Ate pasta and bread
+2025-01-01,18:00,125,Before Dinner,Felt slightly dizzy
+2025-01-02,08:15,90,Fasting,
+2025-01-02,13:00,150,After Lunch,Had dessert
+2025-01-02,20:30,130,After Dinner,Light exercise
+2025-01-03,07:45,85,Fasting,
+2025-01-03,12:15,135,After Lunch,Skipped breakfast
+2025-01-03,17:30,110,Before Dinner,Feeling good
+2025-01-04,08:30,100,Fasting,
+2025-01-04,13:45,160,After Lunch,High-carb meal
+2025-01-04,19:00,140,After Dinner,Ate late

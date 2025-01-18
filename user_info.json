@@ -3,7 +3,10 @@
         "gender": "Male",
         "dob": "2011-04-14",
         "age": 13,
-        "diabetes_type": "Neonatal Diabetes"
+        "weight": 79.0,
+        "height": 189.0,
+        "bmi": 22.11584222166233,
+        "diabetes_type": "MODY (Maturity Onset Diabetes of the Young)"
     },
     "Marcel": {
         "gender": "Male",
@@ -15,6 +18,9 @@
         "gender": "Female",
         "dob": "2005-04-20",
         "age": 19,
+        "weight": 87.0,
+        "height": 187.0,
+        "bmi": 24.879178701135288,
         "diabetes_type": "Type 1"
     },
     "Basia": {
@@ -22,5 +28,14 @@
         "dob": "1993-03-19",
         "age": 31,
         "diabetes_type": "Cystic Fibrosis-related Diabetes"
+    },
+    "Bartey": {
+        "gender": "Male",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 68.0,
+        "height": 190.0,
+        "bmi": 18.83656509695291,
+        "diabetes_type": "Other"
     }
 }
