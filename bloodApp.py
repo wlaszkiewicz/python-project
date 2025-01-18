@@ -46,7 +46,7 @@ class App:
             self.data_file = file_path
             messagebox.showinfo("File Loaded", "Dataset loaded successfully!")
 
-    def make_graph(self):
+    def make_graph_levels_over_time(self):
         if self.data_file is None:
             messagebox.showerror("Error", "No dataset loaded. Please choose a file first.")
             return
@@ -96,6 +96,47 @@ class App:
         else:
             messagebox.showerror("Error",
                                  "The dataset does not have the required columns ('Date', 'Time', 'Blood Glucose Level (mg/dL)').")
+
+
+    #graph levels depending on the meal
+    def make_graph_levels_meal(self):
+        if self.data_file is None:
+            messagebox.showerror("Error", "No dataset loaded. Please choose a file first.")
+            return
+
+        data = pd.read_csv(self.data_file)
+        if 'Meal' in data.columns and 'Blood Glucose Level (mg/dL)' in data.columns:
+            fig, ax = plt.subplots(figsize=(10, 5))
+            ax.bar(data['Meal'], data['Blood Glucose Level (mg/dL)'], color='skyblue', edgecolor='black', alpha=0.7)
+            ax.set_title('Blood Sugar Monitoring', fontsize=20)
+            ax.set_xlabel('Meal', fontsize=16)
+            ax.set_ylabel('Blood Glucose Level (mg/dL)', fontsize=16)
+
+            ax.tick_params(axis='x', rotation=45, labelsize=14)
+            ax.tick_params(axis='y', labelsize=14)
+            ax.grid(True, linestyle='--', alpha=0.7)
+            fig.tight_layout()
+
+            graph_window = ctk.CTkToplevel(self.root)
+            graph_window.title("Blood Glucose Graph")
+            graph_window.attributes('-topmost', True)
+            graph_window.config(bg=BG_COLOR)
+            graph_window.geometry("800x600")
+
+            canvas = FigureCanvasTkAgg(fig, graph_window)
+            canvas.get_tk_widget().pack(fill='both', expand=True, pady=(5, 50))
+            canvas.draw()
+
+            def save_graph():
+                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+                if file_path:
+                    fig.savefig(file_path)
+                    messagebox.showinfo("Success", "Graph saved successfully!")
+
+            save_button = ctk.CTkButton(graph_window, text="Save Graph", command=save_graph)
+            save_button.pack(pady=10)
+        else:
+            messagebox.showerror("Error", "The dataset does not have the required columns ('Meal', 'Blood Glucose Level (mg/dL)').")
 
     def save_user_data(self, new_data):
         try:
@@ -320,18 +361,23 @@ class MainFrame(ctk.CTkFrame):
         self.app = app
         self.place(relwidth=1, relheight=1)
         ctk.CTkLabel(self, text="Blood Glucose Monitoring", font=("Arial", 18)).pack(pady=20)
+
         button_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
         button_frame.pack(pady=20)
+
+        # First row: Choose Dataset/File, Change My Data, Go Back
         ctk.CTkButton(button_frame, text="Choose Dataset/File", width=20, command=app.load_file).grid(row=0, column=0,
                                                                                                       padx=10, pady=10)
-        ctk.CTkButton(button_frame, text="Create The Blood Sugar Graph", width=20, command=app.make_graph).grid(row=0, column=1,
-                                                                                                padx=10, pady=10)
+        ctk.CTkButton(button_frame, text="Change My Data", width=20,
+                      command=lambda: app.show_frame(app.info_frame)).grid(row=0, column=1, padx=10, pady=10)
+        ctk.CTkButton(button_frame, text="Go Back", width=20, command=lambda: app.show_frame(app.welcome_frame)).grid(
+            row=0, column=2, padx=10, pady=10)
 
-        ctk.CTkButton(button_frame, text="Change My Data", width=20, command=lambda: app.show_frame(app.info_frame)).grid(row=0, column=2,
-                                                                                                padx=10, pady=10)
-        ctk.CTkButton(button_frame, text="Go Back", width=20, command=lambda: app.show_frame(app.welcome_frame)).grid(row=0, column=3,
-                                                                                                padx=10, pady=10)
-
+        # Second row: Graph buttons in a column
+        ctk.CTkButton(button_frame, text="Blood Glucose Trends Over Timer Graph", width=20,
+                      command=app.make_graph_levels_over_time).grid(row=1, column=0, columnspan=3, padx=10, pady=10)
+        ctk.CTkButton(button_frame, text="Blood Glucose Levels Depending on the Meal", width=20,
+                      command=app.make_graph_levels_meal).grid(row=2, column=0, columnspan=3, padx=10, pady=10)
 if __name__ == "__main__":
     root = ctk.CTk()
     app = App(root)
