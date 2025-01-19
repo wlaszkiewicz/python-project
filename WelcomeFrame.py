@@ -1,7 +1,8 @@
 import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox, font, simpledialog
-
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 BG_COLOR = "#dbdbdb"
 low_threshold = None
@@ -42,7 +43,7 @@ class WelcomeFrame(ctk.CTkFrame):
         self.place(relwidth=1, relheight=1)
         ctk.CTkLabel(self, text="Welcome to Blood Glucose Monitor", font=("Arial", 18)).pack(pady=20)
         ctk.CTkButton(self, text="Create a new user", command=lambda: app.show_frame(app.info_frame)).pack(pady=20)
-        ctk.CTkButton(self, text="Load existing user", command=self.choose_user).pack(pady=20)
+        ctk.CTkButton(self, text="Load existing user/ all users", command=self.choose_user).pack(pady=20)
 
     def choose_user(self):
         """
@@ -55,7 +56,7 @@ class WelcomeFrame(ctk.CTkFrame):
             a user selection interface.
         """
         if hasattr(self, 'user_frame') and self.user_frame.winfo_exists():
-            return  # If the user frame already exists, do nothing
+            return
 
         self.user_info = self.app.load_user_data()
         if not self.user_info:
@@ -63,6 +64,7 @@ class WelcomeFrame(ctk.CTkFrame):
             return
 
         user_list = list(self.user_info.keys())
+        user_list.append("All Users")
         self.user_var = tk.StringVar(value=user_list[0])
         self.user_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
         self.user_frame.pack(pady=20)
@@ -82,11 +84,26 @@ class WelcomeFrame(ctk.CTkFrame):
 
         :return: None
         """
-        self.app.selected_user = self.user_var.get()
-        self.app.users_info = self.app.load_user_data()
-        if self.app.selected_user in self.app.users_info:
-            self.app.info_frame.user_info = self.app.load_user_data(self.app.selected_user)
-            self.app.info_frame.populate_user_info()
-            self.app.show_frame(self.app.main_frame)
+        selected_user = self.user_var.get()
+        if selected_user == "All Users":
+            self.app.show_frame(self.app.all_users_frame)
         else:
-            messagebox.showerror("Error", "User data not found.")
+            self.app.selected_user = selected_user
+            self.app.users_info = self.app.load_user_data()
+            if self.app.selected_user in self.app.users_info:
+                self.app.info_frame.user_info = self.app.load_user_data(self.app.selected_user)
+                self.app.info_frame.populate_user_info()
+                self.app.show_frame(self.app.main_frame)
+            else:
+                messagebox.showerror("Error", "User data not found.")
+
+    def show_all_users_window(self):
+        self.analyze_all_users()
+        if not self.bmi_data:
+            return
+
+        window = tk.Toplevel(self)
+        window.title("All Users Analysis")
+        window.geometry("400x200")
+        ctk.CTkButton(window, text="Show BMI of All Users", command=self.show_bmi_all_users).pack(pady=20)
+        ctk.CTkButton(window, text="Show Average BMI by Diabetes Type", command=self.show_avg_bmi_by_type).pack(pady=20)

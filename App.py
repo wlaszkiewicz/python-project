@@ -1,3 +1,4 @@
+from AllUsersFrame import AllUsersFrame
 from CustomThresholdDialog import CustomThresholdDialog
 from WelcomeFrame import WelcomeFrame
 from InfoFrame import InfoFrame
@@ -57,7 +58,7 @@ class App:
         self.root = root
         self.root.title("Blood Glucose Monitor")
         self.root.geometry("900x700")
-        self.root.config(bg=BG_COLOR)  # Light background
+        self.root.config(bg=BG_COLOR)
         self.data_file = None
         self.canvas = None
         self.users_info = {}
@@ -69,6 +70,7 @@ class App:
         self.welcome_frame = WelcomeFrame(self)
         self.info_frame = InfoFrame(self)
         self.main_frame = MainFrame(self)
+        self.all_users_frame = AllUsersFrame(self)
 
         self.show_frame(self.welcome_frame)
 

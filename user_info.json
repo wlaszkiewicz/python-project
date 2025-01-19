@@ -55,5 +55,86 @@
         "height": 155.0,
         "bmi": 37.460978147762745,
         "diabetes_type": "Cystic Fibrosis-related Diabetes"
+    },
+    "Tom": {
+        "gender": "Male",
+        "dob": "2000-01-15",
+        "age": 25,
+        "weight": 88.0,
+        "height": 189.0,
+        "bmi": 24.635368550712467,
+        "diabetes_type": "MODY (Maturity Onset Diabetes of the Young)"
+    },
+    "Jas": {
+        "gender": "Male",
+        "dob": "2000-01-02",
+        "age": 25,
+        "weight": 110.0,
+        "height": 178.0,
+        "bmi": 34.71783865673526,
+        "diabetes_type": "Type 1"
+    },
+    "Marlena": {
+        "gender": "Female",
+        "dob": "2004-01-10",
+        "age": 21,
+        "weight": 55.0,
+        "height": 155.0,
+        "bmi": 22.892819979188342,
+        "diabetes_type": "Cystic Fibrosis-related Diabetes"
+    },
+    "Maria": {
+        "gender": "Female",
+        "dob": "2004-01-16",
+        "age": 21,
+        "weight": 62.0,
+        "height": 163.0,
+        "bmi": 23.335466144755166,
+        "diabetes_type": "Steroid-induced Diabetes"
+    },
+    "Monika": {
+        "gender": "Female",
+        "dob": "2000-01-27",
+        "age": 24,
+        "weight": 69.0,
+        "height": 169.0,
+        "bmi": 24.158817968558527,
+        "diabetes_type": "Type 2"
+    },
+    "Marianna": {
+        "gender": "Female",
+        "dob": "2003-01-19",
+        "age": 22,
+        "weight": 70.0,
+        "height": 163.0,
+        "bmi": 26.346494034400994,
+        "diabetes_type": "LADA (Latent autoimmune diabetes in adults)"
+    },
+    "Marcin": {
+        "gender": "Male",
+        "dob": "2000-01-05",
+        "age": 25,
+        "weight": 100.0,
+        "height": 170.0,
+        "bmi": 34.602076124567475,
+        "diabetes_type": "Neonatal Diabetes"
+    },
+    "Katarzyna": {
+        "gender": "Female",
+        "dob": "1995-01-05",
+        "age": 30,
+        "weight": 80.0,
+        "height": 162.0,
+        "bmi": 30.48315805517451,
+        "diabetes_type": "Gestational Diabetes"
+    },
+    "Piotr": {
+        "gender": "Male",
+        "dob": "1997-01-09",
+        "age": 28,
+        "weight": 101.0,
+        "height": 180.0,
+        "bmi": 31.17283950617284,
+        "diabetes_type": "Type 2"
     }
 }
