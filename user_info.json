@@ -37,5 +37,14 @@
         "height": 190.0,
         "bmi": 18.83656509695291,
         "diabetes_type": "Other"
+    },
+    "Owca": {
+        "gender": "Female",
+        "dob": "2004-05-14",
+        "age": 20,
+        "weight": 70.0,
+        "height": 157.0,
+        "bmi": 28.398718000730252,
+        "diabetes_type": "MODY (Maturity Onset Diabetes of the Young)"
     }
 }
