@@ -5,7 +5,25 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
 class AllUsersFrame(ctk.CTkFrame):
+    """
+    A frame for displaying analysis of all users' BMI data.
+
+    Attributes:
+        app (App): The main application instance.
+        user_data (dict): Dictionary containing user data.
+        bmi_data (dict): Dictionary containing BMI and diabetes type data for users.
+        users (list): List of user names.
+        bmis (list): List of BMI values.
+        diabetes_types (list): List of diabetes types.
+    """
+
     def __init__(self, app):
+        """
+        Initializes the AllUsersFrame with buttons and labels for analysis.
+
+        Args:
+            app (App): The main application instance.
+        """
         super().__init__(app.root, corner_radius=10)
         self.app = app
         self.place(relwidth=1, relheight=1)
@@ -15,6 +33,12 @@ class AllUsersFrame(ctk.CTkFrame):
         ctk.CTkButton(self, text="Go Back", command=lambda: app.show_frame(app.welcome_frame)).pack(pady=20)
 
     def analyze_all_users(self):
+        """
+        Analyzes all users' data to extract BMI and diabetes type information.
+
+        Raises:
+            messagebox.showerror: If no user data or no BMI/diabetes type data is found.
+        """
         self.user_data = self.app.load_user_data()
         if not self.user_data:
             messagebox.showerror("Error", "No user data found.")
@@ -31,6 +55,12 @@ class AllUsersFrame(ctk.CTkFrame):
         self.diabetes_types = [self.bmi_data[user][1] for user in self.users]
 
     def center_window(self, window):
+        """
+        Centers a given window on the screen.
+
+        Args:
+            window (tk.Toplevel): The window to be centered.
+        """
         window.update_idletasks()
         width = window.winfo_width()
         height = window.winfo_height()
@@ -39,6 +69,12 @@ class AllUsersFrame(ctk.CTkFrame):
         window.geometry(f'{width}x{height}+{x}+{y}')
 
     def show_bmi_all_users(self):
+        """
+        Displays a plot of BMI values for all users in a new window.
+
+        Raises:
+            messagebox.showerror: If no BMI data is available.
+        """
         self.analyze_all_users()
         if not self.bmi_data:
             return
@@ -67,6 +103,12 @@ class AllUsersFrame(ctk.CTkFrame):
         self.center_window(window)
 
     def show_avg_bmi_by_type(self):
+        """
+        Displays a bar chart of average BMI values by diabetes type in a new window.
+
+        Raises:
+            messagebox.showerror: If no BMI data is available.
+        """
         self.analyze_all_users()
         if not self.bmi_data:
             return
@@ -95,4 +137,22 @@ class AllUsersFrame(ctk.CTkFrame):
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
+        self.center_window(window)
+
+    def show_all_users_window(self):
+        """
+        Displays a window with options to show BMI of all users or average BMI by diabetes type.
+
+        Raises:
+            messagebox.showerror: If no BMI data is available.
+        """
+        self.analyze_all_users()
+        if not self.bmi_data:
+            return
+
+        window = tk.Toplevel(self)
+        window.title("All Users Analysis")
+        window.geometry("400x200")
+        ctk.CTkButton(window, text="Show BMI of All Users", command=self.show_bmi_all_users).pack(pady=20)
+        ctk.CTkButton(window, text="Show Average BMI by Diabetes Type", command=self.show_avg_bmi_by_type).pack(pady=20)
         self.center_window(window)
