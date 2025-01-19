@@ -96,14 +96,3 @@ class WelcomeFrame(ctk.CTkFrame):
                 self.app.show_frame(self.app.main_frame)
             else:
                 messagebox.showerror("Error", "User data not found.")
-
-    def show_all_users_window(self):
-        self.analyze_all_users()
-        if not self.bmi_data:
-            return
-
-        window = tk.Toplevel(self)
-        window.title("All Users Analysis")
-        window.geometry("400x200")
-        ctk.CTkButton(window, text="Show BMI of All Users", command=self.show_bmi_all_users).pack(pady=20)
-        ctk.CTkButton(window, text="Show Average BMI by Diabetes Type", command=self.show_avg_bmi_by_type).pack(pady=20)
