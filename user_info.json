@@ -46,5 +46,14 @@
         "height": 157.0,
         "bmi": 28.398718000730252,
         "diabetes_type": "MODY (Maturity Onset Diabetes of the Young)"
+    },
+    "Kinga": {
+        "gender": "Female",
+        "dob": "2000-01-12",
+        "age": 25,
+        "weight": 90.0,
+        "height": 155.0,
+        "bmi": 37.460978147762745,
+        "diabetes_type": "Cystic Fibrosis-related Diabetes"
     }
 }
