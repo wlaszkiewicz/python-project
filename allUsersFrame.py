@@ -12,7 +12,7 @@ class AllUsersFrame(ctk.CTkFrame):
         app (App): The main application instance.
         user_data (dict): Dictionary containing user data.
         bmi_data (dict): Dictionary containing BMI and diabetes type data for users.
-        users (list): List of user names.
+        users (list): List of users names.
         bmis (list): List of BMI values.
         diabetes_types (list): List of diabetes types.
     """
@@ -31,6 +31,8 @@ class AllUsersFrame(ctk.CTkFrame):
         ctk.CTkButton(self, text="Show BMI of All Users", command=self.show_bmi_all_users).pack(pady=20)
         ctk.CTkButton(self, text="Show Average BMI by Diabetes Type", command=self.show_avg_bmi_by_type).pack(pady=20)
         ctk.CTkButton(self, text="Go Back", command=lambda: app.show_frame(app.welcome_frame)).pack(pady=20)
+
+
 
     def analyze_all_users(self):
         """
@@ -54,19 +56,6 @@ class AllUsersFrame(ctk.CTkFrame):
         self.bmis = [self.bmi_data[user][0] for user in self.users]
         self.diabetes_types = [self.bmi_data[user][1] for user in self.users]
 
-    def center_window(self, window):
-        """
-        Centers a given window on the screen.
-
-        Args:
-            window (tk.Toplevel): The window to be centered.
-        """
-        window.update_idletasks()
-        width = window.winfo_width()
-        height = window.winfo_height()
-        x = (window.winfo_screenwidth() // 2) - (width // 2)
-        y = (window.winfo_screenheight() // 2) - (height // 2)
-        window.geometry(f'{width}x{height}+{x}+{y}')
 
     def show_bmi_all_users(self):
         """
@@ -100,7 +89,13 @@ class AllUsersFrame(ctk.CTkFrame):
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-        self.center_window(window)
+        def save_graph():
+            self.app.save_graph(fig)
+
+        save_button = ctk.CTkButton(window, text="Save Graph", command=save_graph)
+        save_button.pack(pady=10)
+
+        self.app.center_window(window)
 
     def show_avg_bmi_by_type(self):
         """
@@ -137,7 +132,13 @@ class AllUsersFrame(ctk.CTkFrame):
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-        self.center_window(window)
+        def save_graph():
+            self.app.save_graph(fig)
+
+        save_button = ctk.CTkButton(window, text="Save Graph", command=save_graph)
+        save_button.pack(pady=10)
+
+        self.app.center_window(window)
 
     def show_all_users_window(self):
         """
@@ -155,4 +156,5 @@ class AllUsersFrame(ctk.CTkFrame):
         window.geometry("400x200")
         ctk.CTkButton(window, text="Show BMI of All Users", command=self.show_bmi_all_users).pack(pady=20)
         ctk.CTkButton(window, text="Show Average BMI by Diabetes Type", command=self.show_avg_bmi_by_type).pack(pady=20)
-        self.center_window(window)
+
+        self.app.center_window(window)
