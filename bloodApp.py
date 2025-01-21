@@ -1,24 +1,64 @@
-import tkinter as tk
+from allUsersFrame import AllUsersFrame
+from customThresholdDialog import CustomThresholdDialog
+from welcomeFrame import WelcomeFrame
+from infoFrame import InfoFrame
+from mainFrame import MainFrame
 import customtkinter as ctk
 from tkinter import filedialog, messagebox, font, simpledialog
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from tkcalendar import Calendar
 import json
-from datetime import datetime
 import csv
+
 
 BG_COLOR = "#dbdbdb"
 low_threshold = None
 high_threshold = None
 
 class App:
+    """
+    Manages the GUI and functionality of a Blood Glucose Monitor application. The class facilitates user interaction,
+    data visualization, and insights generation based on loaded blood glucose level data.
+
+    This application is designed to assist users in monitoring and analyzing blood glucose levels. By providing options
+    to load data, generate graphical representations, and analyze patterns, it aims to enhance the user's understanding
+    of their glucose trends and assist in making informed decisions.
+
+    :ivar root: The root window of the application.
+    :type root: tkinter.Tk
+    :ivar data_file: The file path of the loaded dataset, initialized to None.
+    :type data_file: Optional[str]
+    :ivar canvas: Canvas used for plotting figures, initialized to None.
+    :type canvas: Optional[Canvas]
+    :ivar users_info: Dictionary storing information about multiple users.
+    :type users_info: dict
+    :ivar selected_user: Current selected user for interaction, initialized to None.
+    :type selected_user: Optional[str]
+    :ivar user_data_file: File path to the storage of user information in JSON format.
+    :type user_data_file: str
+    :ivar welcome_frame: The welcome frame of the GUI.
+    :type welcome_frame: WelcomeFrame
+    :ivar info_frame: The information frame of the GUI.
+    :type info_frame: InfoFrame
+    :ivar main_frame: The main frame of the GUI.
+    :type main_frame: MainFrame
+    """
     def __init__(self, root):
+        """
+        This class initializes and manages the main application window for the Blood
+        Glucose Monitor application. It sets up the application interface, including
+        appearance, frames, and user-specific data handling. It serves as the parent
+        window and interacts with various frames to manage user navigation and actions.
+
+        :param root: The Tkinter root widget that serves as the main container for the
+            application.
+        :type root: tkinter.Tk
+        """
         self.root = root
         self.root.title("Blood Glucose Monitor")
         self.root.geometry("900x700")
-        self.root.config(bg=BG_COLOR)  # Light background
+        self.root.config(bg=BG_COLOR)
         self.data_file = None
         self.canvas = None
         self.users_info = {}
@@ -30,13 +70,37 @@ class App:
         self.welcome_frame = WelcomeFrame(self)
         self.info_frame = InfoFrame(self)
         self.main_frame = MainFrame(self)
+        self.all_users_frame = AllUsersFrame(self)
 
         self.show_frame(self.welcome_frame)
 
     def show_frame(self, frame):
+        """
+        Raises the specified frame to the top of the display stack, essentially
+        making it the visible frame in a Tkinter application. This method is
+        used to switch between different frames or views defined in the
+        application. Each frame is managed by the Tkinter toolkit and identified
+        using its reference.
+
+        :param frame: The frame object to bring to the foreground. The frame
+            should be a valid Tkinter widget that supports the `tkraise`
+            method.
+        :return: None
+        """
         frame.tkraise()
 
     def center_window(self, width, height):
+        """
+        Centers the application window on the user's screen based on the provided
+        width and height. The method calculates the positional offsets required to
+        place the window in the center of the screen.
+
+        :param width: Width of the application window in pixels.
+        :type width: int
+        :param height: Height of the application window in pixels.
+        :type height: int
+        :return: None
+        """
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         position_top = int(screen_height / 2 - height / 2)
@@ -44,12 +108,34 @@ class App:
         self.root.geometry(f'{width}x{height}+{position_right}+{position_top}')
 
     def load_file(self):
+        """
+        Opens a file dialog to select a CSV file and loads the selected file path. If a file is chosen,
+        it sets the file path to the `data_file` attribute and displays a success message.
+
+        :raises FileNotFoundError: if no file is selected or the operation is canceled
+
+        :return: None
+        """
         file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")], parent=self.root)
         if file_path:
             self.data_file = file_path
             messagebox.showinfo("File Loaded", "Dataset loaded successfully!")
 
     def make_graph_levels_over_time(self):
+        """
+        Generates and displays a graph for visualizing blood glucose levels over time. The graph includes annotations for the top
+        peak values and their corresponding timestamps. The user can optionally save the graph to a PDF file.
+
+        :raises tkinter.messagebox.showerror: Raises an error dialog if no dataset is loaded or if the dataset does not contain
+            the required columns ('Date', 'Time', 'Blood Glucose Level (mg/dL)').
+
+        :param self.data_file: str
+            Path to the dataset file in CSV format to be loaded and visualized.
+        :param self.root: tkinter.Tk
+            The root window instance for the application.
+
+        :return: None
+        """
         if self.data_file is None:
             messagebox.showerror("Error", "No dataset loaded. Please choose a file first.")
             return
@@ -89,13 +175,10 @@ class App:
             canvas.draw()
 
             def save_graph():
-                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")], parent=self.root)
-                if file_path:
-                    fig.savefig(file_path)
-                    messagebox.showinfo("Success", "Graph saved successfully!")
-
+                self.save_graph(fig)
             save_button = ctk.CTkButton(graph_window, text="Save Graph", command=save_graph)
             save_button.pack(pady=10)
+
         else:
             messagebox.showerror("Error",
                                  "The dataset does not have the required columns ('Date', 'Time', 'Blood Glucose Level (mg/dL)').")
@@ -103,6 +186,21 @@ class App:
 
     #graph levels depending on the meal
     def make_graph_levels_meal(self):
+        """
+        Creates a bar graph displaying blood glucose levels corresponding to meals. It uses a
+        dataset provided as a CSV file to generate the visualization and displays the graph
+        in a new window with options to save the graph as a PDF file. The function ensures that
+        the required dataset columns are available before proceeding, and displays appropriate
+        error messages otherwise.
+
+        :param self: Instance of the class where this function is defined. Expects the following
+            attributes to be present:
+            - self.data_file: The file path to the dataset (string) or None.
+            - self.root: The root widget for the graphical user interface.
+        :return: None
+        :raises: Displays an error message box if no dataset is loaded or if the columns
+            'Meal' and 'Blood Glucose Level (mg/dL)' are missing in the dataset.
+        """
         if self.data_file is None:
             messagebox.showerror("Error", "No dataset loaded. Please choose a file first.")
             return
@@ -131,10 +229,7 @@ class App:
             canvas.draw()
 
             def save_graph():
-                file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")], parent=self.root)
-                if file_path:
-                    fig.savefig(file_path)
-                    messagebox.showinfo("Success", "Graph saved successfully!")
+                self.save_graph(fig)
 
             save_button = ctk.CTkButton(graph_window, text="Save Graph", command=save_graph)
             save_button.pack(pady=10)
@@ -142,6 +237,27 @@ class App:
             messagebox.showerror("Error", "The dataset does not have the required columns ('Meal', 'Blood Glucose Level (mg/dL)').")
 
     def generate_insights(self):
+        """
+        Generates insights from the loaded blood glucose dataset and displays them
+        in a new interactive window. The function processes the data to provide
+        descriptive statistics, categorization, time in target ranges, daily averages,
+        and averages across different periods of the day. The results are dynamically
+        displayed in a detailed insights window.
+
+        This function requires a CSV dataset containing blood glucose level data
+        along with associated meal information and timestamp details. If the dataset
+        is missing or incomplete, the user will be prompted for correction. Threshold
+        values for blood glucose levels need to be specified for categorization. The
+        results include calculated metrics, patterns, and categorizations that facilitate
+        better understanding of blood glucose behavior and management.
+
+        :raises Exception: If the dataset is not loaded or is missing required columns.
+        :raises FileNotFoundError: When the dataset file is not available.
+
+        :param self: Instance of the current class containing dataset file path
+            and root for dynamic UI modifications.
+        :return: None
+        """
         global low_threshold, high_threshold
         if self.data_file is None:
             messagebox.showerror("Error", "No dataset loaded. Please choose a file first.")
@@ -322,6 +438,16 @@ class App:
                                  "The dataset does not have the required columns ('Meal', 'Blood Glucose Level (mg/dL)').")
 
     def save_user_data(self, new_data):
+        """
+        Saves the updated user data by merging it with the previously saved data. Updates the local
+        data storage file with the combined result. Displays an error message if the operation fails.
+
+        :param new_data: Dictionary containing new user data to be added or updated in the existing
+            data storage.
+        :type new_data: dict
+        :return: None
+        :rtype: None
+        """
         try:
             data = self.load_user_data()
             data.update(new_data)
@@ -331,6 +457,20 @@ class App:
             messagebox.showerror("Error", f"Failed to save user information: {e}")
 
     def load_user_data(self, username=None):
+        """
+        Loads user data from a specified JSON file. If a username is provided, retrieves
+        data specific to that user. Otherwise, returns the entire data set. If the file does
+        not exist or cannot be read as valid JSON, an empty dictionary is returned for all
+        users or None for a specific user.
+
+        :param username: The username of the specific user for whom to load data. Defaults to None.
+        :type username: Optional[str]
+        :return: A dictionary containing user-specific data if username is provided,
+                 all users' data if username is None, or None if username data is not found.
+        :rtype: Union[dict, None]
+        :raises FileNotFoundError: If the specified file does not exist.
+        :raises json.JSONDecodeError: If the file contains invalid JSON content.
+        """
         try:
             with open(self.user_data_file, "r") as file:
                 data = json.load(file)
@@ -340,271 +480,11 @@ class App:
         except (FileNotFoundError, json.JSONDecodeError):
             return {} if not username else None
 
-class WelcomeFrame(ctk.CTkFrame):
-    def __init__(self, app):
-        super().__init__(app.root, corner_radius=10)
-        self.app = app
-        self.place(relwidth=1, relheight=1)
-        ctk.CTkLabel(self, text="Welcome to Blood Glucose Monitor", font=("Arial", 18)).pack(pady=20)
-        ctk.CTkButton(self, text="Create a new user", command=lambda: app.show_frame(app.info_frame)).pack(pady=20)
-        ctk.CTkButton(self, text="Load existing user", command=self.choose_user).pack(pady=20)
-
-    def choose_user(self):
-        if hasattr(self, 'user_frame') and self.user_frame.winfo_exists():
-            return  # If the user frame already exists, do nothing
-
-        self.user_info = self.app.load_user_data()
-        if not self.user_info:
-            messagebox.showerror("Error", "No user data found. Please create a new user.")
-            return
-
-        user_list = list(self.user_info.keys())
-        self.user_var = tk.StringVar(value=user_list[0])
-        self.user_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
-        self.user_frame.pack(pady=20)
-        ctk.CTkLabel(self.user_frame, text="Select User:", text_color="#333333").pack(side="left", padx=10)
-        ctk.CTkComboBox(self.user_frame, values=user_list, variable=self.user_var, text_color="#333333").pack(
-            side="left", padx=10)
-        ctk.CTkButton(self.user_frame, text="Select", command=self.load_user_data_for_selected_user,
-                      text_color="#333333").pack(side="left", padx=10)
-
-    def load_user_data_for_selected_user(self):
-        app.selected_user = self.user_var.get()
-        app.users_info = self.app.load_user_data()
-        if app.selected_user in app.users_info:
-            self.app.info_frame.user_info = app.load_user_data(app.selected_user)
-            self.app.info_frame.populate_user_info()
-            self.app.show_frame(self.app.main_frame)
-        else:
-            messagebox.showerror("Error", "User data not found.")
-
-
-class InfoFrame(ctk.CTkFrame):
-    def __init__(self, app):
-        super().__init__(app.root, corner_radius=10)
-        self.app = app
-        self.place(relwidth=1, relheight=1)
-        self.user_info = None
-        form_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
-        form_frame.pack(pady=50, padx=20)
-
-        ctk.CTkLabel(form_frame, text="Enter your information", font=("Helvetica", 16), text_color="#333333").grid(
-            row=0, column=0, columnspan=2, pady=10)
-
-        ctk.CTkLabel(form_frame, text="Name:", text_color="#333333").grid(row=1, column=0, pady=5, sticky="e")
-        self.name_entry = ctk.CTkEntry(form_frame)
-        self.name_entry.grid(row=1, column=1, pady=5, padx=10)
-
-        ctk.CTkLabel(form_frame, text="Gender:", text_color="#333333").grid(row=2, column=0, pady=5, sticky="e")
-        self.gender_var = tk.StringVar(value="Male")
-        gender_frame = ctk.CTkFrame(form_frame, fg_color=BG_COLOR)
-        gender_frame.grid(row=2, column=1, pady=5, padx=10)
-        ctk.CTkRadioButton(gender_frame, text="Male", variable=self.gender_var, value="Male",
-                           text_color="#333333").pack(side="left", padx=5)
-        ctk.CTkRadioButton(gender_frame, text="Female", variable=self.gender_var, value="Female",
-                           text_color="#333333").pack(side="left", padx=5)
-        ctk.CTkRadioButton(gender_frame, text="Other", variable=self.gender_var, value="Other",
-                           text_color="#333333").pack(side="left", padx=5)
-
-        ctk.CTkLabel(form_frame, text="Date of Birth:", text_color="#333333").grid(row=3, column=0, pady=5, sticky="e")
-        self.dob_entry = ctk.CTkEntry(form_frame)
-        self.dob_entry.grid(row=3, column=1, pady=5, padx=10)
-        self.dob_entry.bind("<Button-1>", self.open_calendar)
-
-        ctk.CTkLabel(form_frame, text="Weight (kg):", text_color="#333333").grid(row=4, column=0, pady=5, sticky="e")
-        self.weight_entry = ctk.CTkEntry(form_frame)
-        self.weight_entry.grid(row=4, column=1, pady=5, padx=10)
-        self.weight_entry.bind("<KeyRelease>", self.update_bmi)
-
-        ctk.CTkLabel(form_frame, text="Height (cm):", text_color="#333333").grid(row=5, column=0, pady=5, sticky="e")
-        self.height_entry = ctk.CTkEntry(form_frame)
-        self.height_entry.grid(row=5, column=1, pady=5, padx=10)
-        self.height_entry.bind("<KeyRelease>", self.update_bmi)
-
-        self.bmi_label = ctk.CTkLabel(form_frame, text="BMI: ", text_color="#333333")
-        self.bmi_label.grid(row=6, column=0, columnspan=2, pady=10)
-
-        diabetes_options = ["Type 1", "Type 2", "Gestational Diabetes", "LADA (Latent autoimmune diabetes in adults)",
-                            "MODY (Maturity Onset Diabetes of the Young)", "Neonatal Diabetes",
-                            "Cystic Fibrosis-related Diabetes", "Steroid-induced Diabetes", "Other"]
-        ctk.CTkLabel(form_frame, text="Diabetes Type:", text_color="#333333").grid(row=7, column=0, pady=5, sticky="e")
-        self.diabetes_var = tk.StringVar(value=diabetes_options[0])
-        ctk.CTkComboBox(form_frame, values=diabetes_options, variable=self.diabetes_var, text_color="#333333").grid(
-            row=7, column=1, pady=5, padx=10)
-
-        ctk.CTkButton(form_frame, text="Save Information", command=self.save_user_info, text_color="#333333").grid(
-            row=8, column=0, columnspan=2, pady=20)
-
-        ctk.CTkButton(form_frame, text="Go Back", command=lambda: app.show_frame(app.welcome_frame),
-                      text_color="#333333").grid(
-            row=9, column=0, columnspan=2, pady=20)
-
-    def populate_user_info(self):
-        if self.user_info:  # If user data is found
-            self.name_entry.delete(0, tk.END)
-            self.name_entry.insert(0, self.app.selected_user)
-            self.gender_var.set(self.user_info.get("gender", "Male"))
-            self.dob_entry.delete(0, tk.END)
-            self.dob_entry.insert(0, self.user_info.get("dob", ""))
-            self.weight_entry.delete(0, tk.END)
-            self.weight_entry.insert(0, self.user_info.get("weight", ""))
-            self.height_entry.delete(0, tk.END)
-            self.height_entry.insert(0, self.user_info.get("height", ""))
-            self.diabetes_var.set(self.user_info.get("diabetes_type", "Type 1"))
-            self.update_bmi()
-
-
-    def open_calendar(self, event):
-        self.cal_window = ctk.CTkToplevel(self.app.root)
-        self.cal_window.title("Select Date of Birth")
-        self.cal_window.geometry("300x300")
-        self.cal_window.config(bg=BG_COLOR)
-        self.cal_window.attributes('-topmost', True)  # Always on top
-
-        # Configure the window to adjust dynamically
-        self.cal_window.rowconfigure(0, weight=1)
-        self.cal_window.columnconfigure(0, weight=1)
-
-        # Get today's date
-        today = datetime.now().date()
-
-        # Custom font for the calendar's title
-        title_font = font.Font(size=16, weight='bold')
-
-        self.cal = Calendar(
-            self.cal_window,
-            selectmode='day',
-            date_pattern='yyyy-mm-dd',
-            year=2000,
-            month=1,
-            day=1,
-            maxdate=today,
-        )
-        # Adjust title font
-        self.cal["font"] = title_font
-
-        self.cal.grid(row=0, column=0, sticky='nsew')  # Fill both vertically and horizontally
-
-        # Add the button and place it below the calendar
-        button = ctk.CTkButton(self.cal_window, text="Select", command=self.select_date)
-        button.grid(row=1, column=0, pady=20)
-
-    def select_date(self):
-        self.dob_entry.delete(0, tk.END)
-        self.dob_entry.insert(0, self.cal.get_date())
-        self.cal_window.destroy()
-
-    def update_bmi(self, event=None):
-        try:
-            weight = float(self.weight_entry.get())
-            height = float(self.height_entry.get()) / 100  # Convert cm to meters
-            bmi = weight / (height ** 2)
-            self.bmi_label.configure(text=f"BMI: {bmi:.2f}")
-        except ValueError:
-            self.bmi_label.configure(text="BMI: ")
-
-    def save_user_info(self):
-        name = self.name_entry.get()
-        if not name:
-            messagebox.showerror("Error", "Name is required.")
-            return
-
-        dob = self.dob_entry.get()
-        birth_date = datetime.strptime(dob, '%Y-%m-%d')
-        today = datetime.today()
-        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-
-        try:
-            weight = float(self.weight_entry.get())
-            height = float(self.height_entry.get()) / 100  # Convert cm to meters
-            bmi = weight / (height ** 2)
-            self.bmi_label.configure(text=f"BMI: {bmi:.2f}")
-        except ValueError:
-            messagebox.showerror("Error", "Please enter valid weight and height.")
-            return
-
-        self.app.users_info[name] = {
-            "gender": self.gender_var.get(),
-            "dob": dob,
-            "age": age,
-            "weight": weight,
-            "height": height * 100,
-            "bmi": bmi,
-            "diabetes_type": self.diabetes_var.get()
-        }
-
-        self.app.save_user_data(self.app.users_info)
-        messagebox.showinfo("Info", "User information saved successfully!")
-        self.app.show_frame(self.app.main_frame)
-
-
-class MainFrame(ctk.CTkFrame):
-    def __init__(self, app):
-        super().__init__(app.root, corner_radius=10)
-        self.app = app
-        self.place(relwidth=1, relheight=1)
-        ctk.CTkLabel(self, text="Blood Glucose Monitoring", font=("Arial", 18)).pack(pady=20)
-
-        button_frame = ctk.CTkFrame(self, fg_color=BG_COLOR)
-        button_frame.pack(pady=20)
-
-        # First row: Choose Dataset/File, Change My Data, Go Back
-        ctk.CTkButton(button_frame, text="Choose Dataset/File", width=20, command=app.load_file).grid(row=0, column=0,
-                                                                                                      padx=10, pady=10)
-        ctk.CTkButton(button_frame, text="Change My Data", width=20,
-                      command=lambda: app.show_frame(app.info_frame)).grid(row=0, column=1, padx=10, pady=10)
-        ctk.CTkButton(button_frame, text="Go Back", width=20, command=lambda: app.show_frame(app.welcome_frame)).grid(
-            row=0, column=2, padx=10, pady=10)
-
-        # Second row: Graph buttons in a column
-        ctk.CTkButton(button_frame, text="Blood Glucose Trends Over Timer Graph", width=20,
-                      command=app.make_graph_levels_over_time).grid(row=1, column=0, columnspan=3, padx=10, pady=10)
-        ctk.CTkButton(button_frame, text="Blood Glucose Levels Depending on the Meal", width=20,
-                      command=app.make_graph_levels_meal).grid(row=2, column=0, columnspan=3, padx=10, pady=10)
-        ctk.CTkButton(button_frame, text="Generate Insights", width=20, command=app.generate_insights).grid(row=3, column=0, columnspan=3, padx=10, pady=10)
-
-
-class CustomThresholdDialog:
-    def __init__(self, root, title, low_initial=70, high_initial=180):
-
-        self.dialog = ctk.CTkToplevel(root)
-        self.dialog.title(title)
-        self.dialog.geometry("300x200")
-        self.dialog.config(bg=BG_COLOR)
-        self.dialog.resizable(False, False)
-        self.dialog.attributes('-topmost', True)  # Always on top
-        self.dialog.grab_set()  # Make the dialog modal
-
-        self.low_threshold = tk.IntVar(value=low_initial)
-        self.high_threshold = tk.IntVar(value=high_initial)
-
-        # Add labels and entry fields
-        ctk.CTkLabel(self.dialog, text="Low Threshold:", font=("Arial", 15), bg_color=BG_COLOR).pack(pady=10)
-        self.low_entry = ctk.CTkEntry(self.dialog, font=("Arial", 15), textvariable=self.low_threshold)
-        self.low_entry.pack()
-
-        ctk.CTkLabel(self.dialog, text="High Threshold:", font=("Arial", 15), bg_color=BG_COLOR).pack(pady=10)
-        self.high_entry = ctk.CTkEntry(self.dialog, font=("Arial", 15), textvariable=self.high_threshold)
-        self.high_entry.pack()
-
-        # Add confirm button
-        ctk.CTkButton(self.dialog, text="Confirm", command=self.confirm).pack(pady=10)
-
-        # Initialize result
-        self.result = None
-
-    def confirm(self):
-        # Retrieve the entered values and close the dialog
-        try:
-            self.result = (int(self.low_entry.get()), int(self.high_entry.get()))
-        except ValueError:
-            tk.messagebox.showerror("Invalid Input", "Please enter valid integers.")
-            return
-        self.dialog.destroy()
-
-    def show(self):
-        self.dialog.wait_window()
-        return self.result
+    def save_graph(self, fig):
+        file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")], parent=self.root)
+        if file_path:
+            fig.savefig(file_path)
+            messagebox.showinfo("Success", "Graph saved successfully!")
 
 if __name__ == "__main__":
     root = ctk.CTk()
