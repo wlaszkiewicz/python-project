@@ -4,7 +4,23 @@ from graph_generator import GraphGenerator
 import colors as c
 
 class AllUsersFrame(ctk.CTkFrame):
+    """Frame for displaying analysis of all users.
+
+    Attributes:
+        app: The main application instance.
+        graph_generator: Instance of GraphGenerator for generating graphs.
+        user_data: Dictionary containing user data.
+        bmi_data: Dictionary containing BMI and diabetes type data for users.
+        users: List of user identifiers.
+        bmis: List of BMI values for users.
+        diabetes_types: List of diabetes types for users.
+    """
     def __init__(self, app):
+        """Initializes the AllUsersFrame.
+
+        Args:
+            app: The main application instance.
+        """
         super().__init__(app.root, corner_radius=10)
         self.app = app
         self.graph_generator = GraphGenerator(app)
@@ -33,6 +49,7 @@ class AllUsersFrame(ctk.CTkFrame):
         ).pack(pady=20)
 
     def analyze_all_users(self):
+        """Analyzes all users' data for BMI and diabetes type."""
         self.user_data = self.app.load_user_data()
         if not self.user_data:
             messagebox.showerror("Error", "No user data found.")
@@ -49,12 +66,14 @@ class AllUsersFrame(ctk.CTkFrame):
         self.diabetes_types = [self.bmi_data[user][1] for user in self.users]
 
     def show_bmi_all_users(self):
+        """Displays the BMI of all users."""
         self.analyze_all_users()
         if not self.bmi_data:
             return
         self.graph_generator.show_bmi_all_users(self.users, self.bmis)
 
     def show_avg_bmi_by_type(self):
+        """Displays the average BMI by diabetes type."""
         self.analyze_all_users()
         if not self.bmi_data:
             return
@@ -69,6 +88,7 @@ class AllUsersFrame(ctk.CTkFrame):
         self.graph_generator.show_avg_bmi_by_type(avg_bmi_per_type)
 
     def go_back(self):
+        """Navigates back to the welcome frame."""
         self.app.show_frame(self.app.welcome_frame)
         self.app.welcome_frame.hide_user_frame()
         self.app.info_frame.clear_user_info()

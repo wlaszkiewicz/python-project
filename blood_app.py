@@ -12,7 +12,23 @@ window_width = 600
 window_height = 500
 
 class App:
-    """Main application class for the Blood Glucose Monitor."""
+    """Main application class for the Blood Glucose Monitor.
+
+    Attributes:
+        root (tk.Tk): The root window of the application.
+        data_file (str): Path to the loaded CSV data file.
+        canvas (tk.Canvas): Canvas for drawing.
+        selected_user (str): Currently selected user.
+        user_data_file (str): Path to the user data JSON file.
+        users_info (dict): Dictionary containing user information.
+        welcome_frame (WelcomeFrame): Frame for the welcome screen.
+        info_frame (InfoFrame): Frame for displaying user information.
+        main_frame (MainFrame): Frame for the main application interface.
+        all_users_frame (AllUsersFrame): Frame for displaying all users.
+
+    Args:
+        root (tk.Tk): The root window of the application.
+    """
 
     def __init__(self, root):
         """

@@ -1,16 +1,22 @@
 import tkinter as tk
 import customtkinter as ctk
-from tkinter import filedialog, messagebox, font, simpledialog
-
+from tkinter import messagebox
 
 BG_COLOR = "#dbdbdb"
-low_threshold = None
-high_threshold = None
 
 class CustomThresholdDialog:
+    """A custom dialog for setting low and high thresholds."""
 
     def __init__(self, root, title, low_initial=70, high_initial=180):
+        """
+        Initializes the CustomThresholdDialog.
 
+        Args:
+            root (tk.Tk): The root window of the application.
+            title (str): The title of the dialog.
+            low_initial (int, optional): The initial value for the low threshold. Defaults to 70.
+            high_initial (int, optional): The initial value for the high threshold. Defaults to 180.
+        """
         self.dialog = ctk.CTkToplevel(root)
         self.dialog.title(title)
         self.dialog.geometry("300x200")
@@ -38,8 +44,7 @@ class CustomThresholdDialog:
         self.result = None
 
     def confirm(self):
-
-        # Retrieve the entered values and close the dialog
+        """Confirms the input and closes the dialog."""
         try:
             self.result = (int(self.low_entry.get()), int(self.high_entry.get()))
         except ValueError:
@@ -48,6 +53,11 @@ class CustomThresholdDialog:
         self.dialog.destroy()
 
     def show(self):
+        """
+        Displays the dialog and waits for user input.
 
+        Returns:
+            tuple: A tuple containing the low and high thresholds, or None if the dialog was canceled.
+        """
         self.dialog.wait_window()
         return self.result
