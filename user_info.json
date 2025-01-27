@@ -1,6 +1,6 @@
 {
     "Wiktor": {
-        "gender": "Female",
+        "gender": "Other",
         "dob": "2011-04-14",
         "age": 13,
         "weight": 79.0,
@@ -145,5 +145,59 @@
         "height": 180.0,
         "bmi": 37.03703703703704,
         "diabetes_type": "Neonatal Diabetes"
+    },
+    "Anna": {
+        "gender": "Female",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 189.0,
+        "height": 190.0,
+        "bmi": 52.35457063711912,
+        "diabetes_type": "LADA"
+    },
+    "AnnaBella": {
+        "gender": "Male",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 89.0,
+        "height": 189.0,
+        "bmi": 24.915315920606925,
+        "diabetes_type": "Type 1"
+    },
+    "AnnaBellaCC": {
+        "gender": "Female",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 78.0,
+        "height": 189.0,
+        "bmi": 21.83589485176787,
+        "diabetes_type": "MODY"
+    },
+    "AnnaCCC": {
+        "gender": "",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 78.0,
+        "height": 190.0,
+        "bmi": 21.606648199445985,
+        "diabetes_type": "Type 2"
+    },
+    "Pioter": {
+        "gender": "Female",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 89.0,
+        "height": 190.0,
+        "bmi": 24.653739612188367,
+        "diabetes_type": "LADA"
+    },
+    "AnnaBElla": {
+        "gender": "Female",
+        "dob": "2000-01-01",
+        "age": 25,
+        "weight": 67.0,
+        "height": 189.0,
+        "bmi": 18.75647378292881,
+        "diabetes_type": "Gestational Diabetes"
     }
 }
