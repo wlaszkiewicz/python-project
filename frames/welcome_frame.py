@@ -7,9 +7,23 @@ low_threshold = None
 high_threshold = None
 
 class WelcomeFrame(ctk.CTkFrame):
+    """
+    Welcome frame for the application.
+
+    Attributes:
+        app (object): The main application instance.
+        selected_user (str): The currently selected user.
+        user_info (dict): Information about the users.
+        user_var (tk.StringVar): Tkinter variable for the selected user.
+        user_frame (ctk.CTkFrame): Frame for user selection.
+
+    Args:
+        app: The main application instance.
+
+    """
     def __init__(self, app):
         """
-        Initializes the WelcomeFrame.
+        Initializes the WelcomeFrame and sets up the UI components.
 
         Args:
             app: The main application instance.
@@ -65,7 +79,7 @@ class WelcomeFrame(ctk.CTkFrame):
 
     def choose_user(self):
         """
-        Displays a dropdown to select an existing user and load their data.
+        Displays a dropdown to select an existing user and load their data. Hide the user frame if it is already displayed.
         """
         if hasattr(self, 'user_frame') and self.user_frame.winfo_exists() and self.user_frame.winfo_ismapped():
             return
@@ -91,7 +105,7 @@ class WelcomeFrame(ctk.CTkFrame):
 
     def load_user_data_for_selected_user(self):
         """
-        Loads the data for the selected user and navigates to the main frame.
+        Loads the data for the selected user and navigates to the main frame. Hide the user frame after loading the data.
 
         Raises:
             KeyError: If the selected user data is not found.

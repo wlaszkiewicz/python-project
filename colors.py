@@ -1,3 +1,7 @@
+"""
+This module defines color constants used throughout the application.
+"""
+
 BG_COLOR = "#dbdbdb"
 DARK_BLUE = "#1D4ED8"
 BLUE = "#2563EB"

@@ -15,6 +15,9 @@ class InsightsGenerator:
         data_file (str): Path to the loaded dataset file.
         low_threshold (int): The low threshold for blood glucose levels.
         high_threshold (int): The high threshold for blood glucose levels.
+
+    Args:
+        app (object): The main application instance.
     """
 
     def __init__(self, app):
@@ -125,7 +128,17 @@ class InsightsGenerator:
 
     def show_insights(self):
         """
-        Displays the insights in a new window.
+        Displays the insights in a new window. If the dataset does not have the required columns, an error message is shown.
+
+        The insights include:
+        - Meal statistics
+        - Time in range
+        - Daily averages
+        - Time period averages
+        - Highest and lowest blood glucose levels
+
+        Raises:
+            tkinter.TclError: If the dataset does not have the required columns.
         """
         data = self.load_data()
         if data is None or 'Meal' not in data.columns or 'Blood Glucose Level (mg/dL)' not in data.columns or 'Notes' not in data.columns:
@@ -145,9 +158,9 @@ class InsightsGenerator:
         insights_window = ctk.CTkToplevel(self.app.root)
         insights_window.title("Blood Glucose Insights")
         insights_window.attributes('-topmost', True)
-        insights_window.geometry("600x600")
+        insights_window.geometry("550x500")
 
-        insights_frame = ctk.CTkScrollableFrame(insights_window, fg_color="#FFFFFF", width=780, height=500)
+        insights_frame = ctk.CTkScrollableFrame(insights_window, fg_color="#FFFFFF", width=550, height=400)
         insights_frame.pack(pady=10, padx=10)
 
         self.display_meal_stats(insights_frame, meal_stats)
@@ -161,6 +174,14 @@ class InsightsGenerator:
                                                            time_period_averages)).pack(pady=10)
 
     def display_meal_stats(self, frame, meal_stats):
+        """
+        Displays the meal statistics in a collapsible frame.
+
+        Args:
+            frame (CTkFrame): The parent frame to attach the collapsible frame.
+            meal_stats (DataFrame): The meal statistics to display.
+
+        """
         collapsible_frame = CollapsibleFrame(frame, title="Meal Statistics")
         collapsible_frame.pack(pady=15, fill="x")
 
@@ -177,6 +198,15 @@ class InsightsGenerator:
                 ctk.CTkLabel(meal_stats_frame, text=value).grid(row=i, column=col + 1, padx=10, sticky="ew")
 
     def display_category_counts(self, frame, category_counts):
+        """
+        Displays the time in range categories in a collapsible frame.
+
+        Args:
+            frame (CTkFrame): The parent frame to attach the collapsible frame.
+            category_counts (Series): The category counts to display.
+
+        """
+
         collapsible_frame = CollapsibleFrame(frame, title="Time in Range")
         collapsible_frame.pack(pady=15, fill="x")
 
@@ -186,6 +216,15 @@ class InsightsGenerator:
                          font=("Arial", 12)).pack(pady=5)
 
     def display_daily_averages(self, frame, daily_avg):
+        """
+        Displays the daily averages in a collapsible frame.
+
+        Args:
+            frame (CTkFrame): The parent frame to attach the collapsible frame.
+            daily_avg (Series): The daily averages to display.
+
+        """
+
         collapsible_frame = CollapsibleFrame(frame, title="Daily Averages")
         collapsible_frame.pack(pady=15, fill="x")
 
@@ -196,6 +235,14 @@ class InsightsGenerator:
             ctk.CTkLabel(daily_avg_frame, text=f"{date.date()}: {avg:.2f} mg/dL", font=("Arial", 12)).pack(pady=2)
 
     def display_time_period_averages(self, frame, time_period_averages):
+        """
+        Displays the time period averages in a collapsible frame.
+
+        Args:
+            frame (CTkFrame): The parent frame to attach the collapsible frame.
+            time_period_averages (dict): The time period averages to display.
+        """
+
         collapsible_frame = CollapsibleFrame(frame, title="Time Period Averages")
         collapsible_frame.pack(pady=15, fill="x")
 
@@ -209,6 +256,14 @@ class InsightsGenerator:
                              font=("Arial", 12)).pack()
 
     def display_extreme_values(self, frame, data, top_n=5):
+        """
+        Displays the highest and lowest blood glucose levels in a collapsible frame.
+
+        Args:
+            frame (CTkFrame): The parent frame to attach the collapsible frame.
+            data (DataFrame): The dataset as a pandas DataFrame.
+            top_n (int): The number of highest and lowest values to display. Default is 5.
+        """
         collapsible_frame_high = CollapsibleFrame(frame, title="Highest Blood Sugar Levels")
         collapsible_frame_high.pack(pady=15, fill="x")
 
@@ -265,7 +320,7 @@ class InsightsGenerator:
 
     def create_background_frame(self, parent):
         """
-        Creates a white background frame with a fixed width of 400.
+        Creates a white background frame.
 
         Args:
             parent (CTkFrame): The parent frame to attach the background frame.
@@ -274,28 +329,50 @@ class InsightsGenerator:
             CTkFrame: The created background frame.
         """
         background_frame = ctk.CTkFrame(parent, fg_color="#FFFFFF", width=400)
-        background_frame.pack(padx=50, pady=5, fill="x", anchor="center")
+        background_frame.pack(padx=30, pady=5, fill="x", anchor="center")
         return background_frame
 
 
 class CollapsibleFrame(ctk.CTkFrame):
+    """
+    A frame that can be collapsed or expanded.
+
+    Attributes:
+        title (str): The title of the collapsible frame
+        is_collapsed (bool): Whether the frame is currently collapsed
+
+    Args:
+        master: The parent widget.
+        title (str): The title of the collapsible frame
+    """
     def __init__(self, master, title="", *args, **kwargs):
+        """
+        Initializes the CollapsibleFrame.
+
+        Args:
+            master: The parent widget.
+            title (str): The title of the collapsible frame
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         super().__init__(master, *args, **kwargs)
         self.title = title
         self.is_collapsed = True
 
-        self.header = ctk.CTkFrame(self, fg_color=c.BG_COLOR)
+        self.header = ctk.CTkFrame(self, fg_color="#d0eaff", corner_radius=10)
         self.header.pack(fill="x", expand=True)
         self.header_label = ctk.CTkLabel(self.header, text=self.title, font=("Arial", 16, "bold"), anchor="center",
                                          justify="center")
-        self.header_label.pack(side="left", pady=10, expand=True)
-        self.toggle_button = ctk.CTkButton(self.header, text="▼", width=2, command=self.toggle, fg_color=c.BG_COLOR,
-                                           hover_color=c.BG_COLOR, text_color="black")
+        self.header_label.pack(side="left", pady=5, expand=True)
+        self.toggle_button = ctk.CTkButton(self.header, text="▼", width=2, command=self.toggle, fg_color=c.BG_COLOR, text_color="black")
         self.toggle_button.pack(side="right", padx=10)
 
-        self.content_frame = ctk.CTkFrame(self, fg_color=c.BG_COLOR)
+        self.content_frame = ctk.CTkFrame(self, fg_color="#d0eaff", corner_radius=10)
 
     def toggle(self):
+        """
+         Toggles the visibility of the content frame and changes the button text accordingly.
+        """
         if self.is_collapsed:
             self.content_frame.pack(fill="x", expand=True)
             self.toggle_button.configure(text="▲")

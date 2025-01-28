@@ -10,13 +10,35 @@ low_threshold = None
 high_threshold = None
 
 class MainFrame(ctk.CTkFrame):
-    """Main frame for the application.
+    """
+    Main frame for the application.
+
+    Attributes:
+        app: The main application instance.
+        data_file: The path to the loaded dataset file.
+        graph_generator: Instance of GraphGenerator for creating graphs.
+        insights_generator: Instance of InsightsGenerator for generating insights.
+        selected_user: The currently selected user.
+        welcome_label: Label widget for displaying welcome message.
+        select_dataset_button: Button widget for selecting a dataset.
+        dataset_label: Label widget for displaying the selected dataset.
+        graph_time_button: Button widget for generating time-based graph.
+        graph_meal_button: Button widget for generating meal-based graph.
+        insights_button: Button widget for generating insights.
+        go_back_button: Button widget for navigating back.
 
     Args:
         app: The main application instance.
     """
 
     def __init__(self, app):
+        """
+        Initializes the MainFrame and sets up the UI components.
+
+        Args:
+            app: The main application instance.
+        """
+
         super().__init__(app.root, corner_radius=10)
         self.app = app
         self.data_file = None
@@ -154,7 +176,7 @@ class MainFrame(ctk.CTkFrame):
             button.configure(state="disabled", fg_color="gray")
 
     def go_back(self):
-        """Navigates back to the previous frame."""
+        """Navigates back to the welcome frame. Hides user frame and clears user info."""
         self.app.show_frame(self.app.welcome_frame)
         self.app.welcome_frame.hide_user_frame()
         self.app.info_frame.clear_user_info()

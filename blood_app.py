@@ -2,10 +2,10 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import tkinter as tk
 import json
-from all_users_frame import AllUsersFrame
-from welcome_frame import WelcomeFrame
-from info_frame import InfoFrame
-from main_frame import MainFrame
+from frames.all_users_frame import AllUsersFrame
+from frames.welcome_frame import WelcomeFrame
+from frames.info_frame import InfoFrame
+from frames.main_frame import MainFrame
 import colors as c
 
 window_width = 600
@@ -29,7 +29,6 @@ class App:
     Args:
         root (tk.Tk): The root window of the application.
     """
-
     def __init__(self, root):
         """
         Initializes the application.
@@ -88,13 +87,13 @@ class App:
 
     def load_user_data(self, username=None):
         """
-        Loads user data from a JSON file.
+        Loads user data from a JSON file. If a username is provided, loads data for that user. Otherwise, loads all user data.
 
         Args:
             username (str, optional): The username to load data for. If None, loads all user data.
 
         Returns:
-            dict: The user data.
+            dict: The user data. If a username is provided, returns the data for that user.
         """
         try:
             with open(self.user_data_file, "r") as file:

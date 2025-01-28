@@ -14,6 +14,9 @@ class AllUsersFrame(ctk.CTkFrame):
         users: List of user identifiers.
         bmis: List of BMI values for users.
         diabetes_types: List of diabetes types for users.
+
+    Args:
+        app: The main application instance.
     """
     def __init__(self, app):
         """Initializes the AllUsersFrame.
@@ -37,16 +40,9 @@ class AllUsersFrame(ctk.CTkFrame):
         ctk.CTkLabel(self, text="All Users Analysis", font=("Arial", 20, "bold"), text_color="#2d3436").pack(pady=20)
         ctk.CTkButton(self, text="Show BMI of All Users", **button_style, command=self.show_bmi_all_users).pack(pady=20)
         ctk.CTkButton(self, text="Show Average BMI by Diabetes Type", **button_style, command=self.show_avg_bmi_by_type).pack(pady=20)
-        ctk.CTkButton(
-            self,
-            text="Go Back",
-            command=self.go_back,
-            fg_color=c.LIGHTER_BLUE,
-            hover_color="#5a8bbf",
-            text_color="white",
-            corner_radius=10,
-            width=150,
-        ).pack(pady=20)
+        ctk.CTkButton(self, text="Show Diabetes Type Distribution by Age", **button_style, command=self.show_age_distribution_by_type).pack(pady=20)
+        ctk.CTkButton(self, text="Show Diabetes Type Distribution by Gender", **button_style, command=self.show_gender_distribution_by_type).pack(pady=20)
+        ctk.CTkButton(self, text="Go Back", command=self.go_back, fg_color=c.LIGHTER_BLUE, hover_color="#5a8bbf", text_color="white", corner_radius=10, width=150).pack(pady=20)
 
     def analyze_all_users(self):
         """Analyzes all users' data for BMI and diabetes type."""
@@ -87,8 +83,34 @@ class AllUsersFrame(ctk.CTkFrame):
         avg_bmi_per_type = {dtype: sum(bmis) / len(bmis) for dtype, bmis in diabetes_type_bmi.items()}
         self.graph_generator.show_avg_bmi_by_type(avg_bmi_per_type)
 
+    def show_gender_distribution_by_type(self):
+        """Displays the distribution of diabetes types by gender."""
+        self.analyze_all_users()
+        if not self.user_data:
+            return
+
+        gender_data = {dtype: [] for dtype in set(self.diabetes_types)}
+        for user, data in self.user_data.items():
+            if 'gender' in data and 'diabetes_type' in data:
+                gender_data[data['diabetes_type']].append(data['gender'])
+
+        self.graph_generator.show_gender_distribution_by_type(gender_data)
+
+    def show_age_distribution_by_type(self):
+        """Displays the distribution of diabetes types by age."""
+        self.analyze_all_users()
+        if not self.user_data:
+            return
+
+        age_data = {dtype: [] for dtype in set(self.diabetes_types)}
+        for user, data in self.user_data.items():
+            if 'age' in data and 'diabetes_type' in data:
+                age_data[data['diabetes_type']].append(data['age'])
+
+        self.graph_generator.show_age_distribution_by_type(age_data)
+
     def go_back(self):
-        """Navigates back to the welcome frame."""
+        """Navigates back to the welcome frame. Hides user frame and clears user info."""
         self.app.show_frame(self.app.welcome_frame)
         self.app.welcome_frame.hide_user_frame()
         self.app.info_frame.clear_user_info()

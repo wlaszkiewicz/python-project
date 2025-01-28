@@ -9,6 +9,24 @@ low_threshold = None
 high_threshold = None
 
 class InfoFrame(ctk.CTkFrame):
+    """
+    Info frame for the application.
+
+    Attributes:
+        app: The main application instance.
+        user_info: Information about the users.
+        from_welcome_frame: Flag to indicate if the user is coming from the welcome frame.
+        name_entry: Entry widget for entering the user's name.
+        gender_var: Variable for storing the user's gender.
+        dob_entry: Entry widget for entering the user's date of birth.
+        weight_entry: Entry widget for entering the user's weight.
+        height_entry: Entry widget for entering the user's height.
+        bmi_label: Label widget for displaying the user's BMI.
+        diabetes_var: Variable for storing the user's diabetes type.
+
+    Args:
+        app: The main application instance.
+    """
     def __init__(self, app):
         """
         Initializes the InfoFrame.
@@ -25,11 +43,7 @@ class InfoFrame(ctk.CTkFrame):
         form_frame = ctk.CTkFrame(self, fg_color=c.BG_COLOR)
         form_frame.pack(pady=10, padx=20)
 
-        ctk.CTkLabel(
-            form_frame,
-            text="Enter Your Information",
-            font=("Helvetica", 18, "bold"),
-            text_color="#2C3E50"
+        ctk.CTkLabel(form_frame,text="Enter Your Information",font=("Helvetica", 18, "bold"),text_color="#2C3E50"
         ).grid(row=0, column=0, columnspan=2, pady=10)
 
         ctk.CTkLabel(form_frame, text="Name:", text_color="#333333").grid(row=1, column=0, pady=5, sticky="e")
@@ -41,13 +55,7 @@ class InfoFrame(ctk.CTkFrame):
         gender_frame = ctk.CTkFrame(form_frame, fg_color=c.BG_COLOR)
         gender_frame.grid(row=2, column=1, pady=5, padx=10)
         for gender in ["Male", "Female", "Other"]:
-            ctk.CTkRadioButton(
-                gender_frame,
-                text=gender,
-                variable=self.gender_var,
-                value=gender,
-                text_color="#333333"
-            ).pack(side="left", padx=5)
+            ctk.CTkRadioButton(gender_frame, text=gender, variable=self.gender_var, value=gender, text_color="#333333").pack(side="left", padx=5)
 
         ctk.CTkLabel(form_frame, text="Date of Birth:", text_color="#333333").grid(row=3, column=0, pady=5, sticky="e")
         self.dob_entry = ctk.CTkEntry(form_frame, placeholder_text="YYYY-MM-DD")
@@ -64,12 +72,7 @@ class InfoFrame(ctk.CTkFrame):
         self.height_entry.grid(row=5, column=1, pady=5, padx=10)
         self.height_entry.bind("<KeyRelease>", self.update_bmi)
 
-        self.bmi_label = ctk.CTkLabel(
-            form_frame,
-            text="BMI: ",
-            font=("Helvetica", 14, "bold"),
-            text_color="#2C3E50"
-        )
+        self.bmi_label = ctk.CTkLabel(form_frame, text="BMI: ", font=("Helvetica", 14, "bold"), text_color="#2C3E50")
         self.bmi_label.grid(row=6, column=0, columnspan=2, pady=10)
 
         diabetes_options = [
@@ -82,23 +85,8 @@ class InfoFrame(ctk.CTkFrame):
             row=7, column=1, pady=20,padx=10
         )
 
-        ctk.CTkButton(
-            form_frame,
-            text="Save Information",
-            command=self.save_user_info,
-            text_color="white",
-            fg_color=c.VIBRANT_BLUE,
-            hover_color=c.BLUE,
-        ).grid(row=8, column=0, columnspan=2)
-
-        ctk.CTkButton(
-            form_frame,
-            text="Go Back",
-            command=self.go_back,
-            text_color="white",
-            fg_color=c.LIGHT_BLUE,
-            hover_color=c.LIGHTER_BLUE,
-        ).grid(row=9, column=0, columnspan=2, pady=10)
+        ctk.CTkButton(form_frame, text="Save Information", command=self.save_user_info, text_color="white", fg_color=c.VIBRANT_BLUE, hover_color=c.BLUE).grid(row=8, column=0, columnspan=2)
+        ctk.CTkButton(form_frame, text="Go Back", command=self.go_back, text_color="white", fg_color=c.LIGHT_BLUE, hover_color=c.LIGHTER_BLUE).grid(row=9, column=0, columnspan=2, pady=10)
 
 
     def populate_user_info(self):
